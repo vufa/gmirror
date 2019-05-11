@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package git
+package repo
 
 import (
 	"gopkg.in/src-d/go-git.v4"
@@ -41,7 +41,7 @@ func GetAuth(repo string, username string, token string) (transport.AuthMethod, 
 }
 
 // ValidateRepo check repo validate or not
-func ValidateRepo(repo string, targetAuth transport.AuthMethod) error {
+func ValidateRepo(repo string, repoAuth transport.AuthMethod) error {
 	// Create a temporary repository in memory
 	r, err := git.Init(memory.NewStorage(), nil)
 	if err != nil {
@@ -60,7 +60,7 @@ func ValidateRepo(repo string, targetAuth transport.AuthMethod) error {
 	// Fetch using the new remote
 	err = r.Fetch(&git.FetchOptions{
 		RemoteName: git.DefaultRemoteName,
-		Auth:       targetAuth,
+		Auth:       repoAuth,
 	})
 	if err != nil {
 		return err

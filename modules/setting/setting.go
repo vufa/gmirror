@@ -20,6 +20,11 @@ import (
 	"github.com/go-ini/ini"
 )
 
+const (
+	OriginRemoteName = "origin"
+	TargetRemoteName = "target"
+)
+
 var (
 	//App settings
 	AppPath    string
