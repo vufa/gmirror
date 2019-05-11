@@ -5,9 +5,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/countstarlight/gmirror/cmd"
 	"github.com/countstarlight/gmirror/modules/setting"
-	"github.com/countstarlight/gmirror/modules/version"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"os"
@@ -20,12 +20,22 @@ func init() {
 }
 
 func main() {
+
+	cli.VersionPrinter = func(c *cli.Context) {
+		fmt.Println(c.App.Version)
+	}
+
+	cli.VersionFlag = cli.BoolFlag{
+		Name:  "version, V",
+		Usage: "show gmirror version",
+	}
 	app := cli.NewApp()
 	app.Name = "gmirror"
-	app.Version = version.Version.String()
+	app.Version = setting.AppVersion
 	app.Usage = "mirror between git repositories"
-	app.Action = cmd.Mirror
+	// Global flags
 	app.Flags = cmd.Flags
+	app.Commands = cmd.Commands
 	app.Before = cmd.Before
 	if err := app.Run(os.Args); err != nil {
 		logrus.Fatalf("[gmirror]%s", err.Error())

@@ -6,6 +6,7 @@ package setting
 
 import (
 	"github.com/countstarlight/gmirror/modules/com"
+	"github.com/countstarlight/gmirror/modules/version"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
@@ -21,7 +22,9 @@ import (
 
 var (
 	//App settings
-	AppPath string
+	AppPath    string
+	RootPath   string
+	AppVersion string
 
 	//Global setting objects
 	Cfg       *ini.File
@@ -60,13 +63,20 @@ func init() {
 	//	which path starts with two "/" in Windows: "//psf/Home/..."
 	AppPath = strings.Replace(AppPath, "\\", "/", -1)
 
+	// Get Root path
+	RootPath, err = WorkDir()
+	if err != nil {
+		logrus.Fatalf("Fail to get work directory: %s", err.Error())
+	}
 	//Control multiple goroutines create directory
 	MkLock = new(sync.Mutex)
+
+	AppVersion = version.Version.String()
 }
 
 // WorkDir returns absolute path of work directory.
 func WorkDir() (string, error) {
-	wd := os.Getenv("ALIGN_WORK_DIR")
+	wd := os.Getenv("GMIRROR_WORK_DIR")
 	if len(wd) > 0 {
 		return wd, nil
 	}
@@ -87,14 +97,10 @@ func forcePathSeparator(path string) {
 // NewContext initializes configuration context.
 // NOTE: do not print any log except error.
 func NewContext() {
-	workDir, err := WorkDir()
-	if err != nil {
-		logrus.Fatalf("Fail to get work directory: %s", err.Error())
-	}
-	ConfFile = path.Join(workDir, "conf/app.ini")
+	ConfFile = path.Join(RootPath, "conf/app.ini")
 
 	//Cfg, err = ini.Load("conf/example_app.ini")
-	Cfg, err = ini.Load(ConfFile)
+	Cfg, err := ini.Load(ConfFile)
 	if err != nil {
 		logrus.Fatalf("Fail to parse %s: %s", ConfFile, err.Error())
 	}
@@ -103,7 +109,7 @@ func NewContext() {
 
 	// Load log config
 	sec := Cfg.Section("log")
-	LogRootPath = sec.Key("ROOT_PATH").MustString(path.Join(workDir, "log"))
+	LogRootPath = sec.Key("ROOT_PATH").MustString(path.Join(RootPath, "log"))
 	forcePathSeparator(LogRootPath)
 }
 
